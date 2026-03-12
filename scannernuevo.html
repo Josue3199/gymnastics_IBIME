@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBIME - Control de Clases</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0f172a;color:white}
+.glass{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:1.25rem}
+.view{display:none}.view.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.nav-item{transition:all .2s;border-radius:.75rem;padding:.7rem 1rem;font-size:.65rem;font-weight:800;text-transform:uppercase;width:100%;text-align:left;display:flex;align-items:center;gap:.75rem;color:#94a3b8}
+.nav-item:hover{background:rgba(255,255,255,.08);color:white}
+.nav-item.active{background:#4f46e5;color:white}
+/* Scanner overlay */
+#scannerOverlay{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center}
+#scannerOverlay.active{display:flex}
+#html5-qrcode-button-camera-permission,#html5-qrcode-button-camera-start,#html5-qrcode-button-camera-stop{display:none!important}
+/* Resultado acceso */
+.acceso-ok  {background:linear-gradient(135deg,#065f46,#10b981)}
+.acceso-fail{background:linear-gradient(135deg,#7f1d1d,#ef4444)}
+.acceso-pend{background:linear-gradient(135deg,#78350f,#f59e0b)}
+/* Tarjeta de clase */
+.clase-card{cursor:pointer;transition:all .2s}
+.clase-card:hover{background:rgba(255,255,255,.08)}
+.clase-card.active-clase{border-color:#6366f1;background:rgba(99,102,241,.15)}
+/* Chips de asistencia */
+.chip-presente{background:#065f46;color:#6ee7b7}
+.chip-ausente {background:#7f1d1d;color:#fca5a5}
+.chip-tard    {background:#78350f;color:#fde68a}
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:9999;background:#1e293b;color:white;padding:.75rem 1.5rem;border-radius:1rem;font-size:.7rem;font-weight:800;text-transform:uppercase;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body class="flex min-h-screen">
+
+<div id="toast" class="flex items-center gap-3"><span id="tIcon">✅</span><span id="tMsg"></span></div>
+
+<!-- SCANNER OVERLAY -->
+<div id="scannerOverlay">
+  <div class="text-center mb-6">
+    <p class="font-black text-xl uppercase text-white mb-1">Escanear QR</p>
+    <p id="scannerModo" class="text-slate-400 text-xs font-bold uppercase">Modo: Acceso</p>
+  </div>
+  <div id="scannerBox" class="rounded-3xl overflow-hidden" style="width:300px;height:300px"></div>
+  <div class="mt-8 grid grid-cols-2 gap-4">
+    <button onclick="cerrarScanner()" class="px-8 py-3 bg-slate-700 text-white rounded-xl font-black text-xs uppercase">Cancelar</button>
+  </div>
+  <!-- Resultado acceso -->
+  <div id="resultadoAcceso" class="hidden mt-6 w-72 rounded-2xl p-5 text-center">
+    <div class="text-5xl mb-3" id="resIcon">✅</div>
+    <p id="resNombre" class="font-black text-xl uppercase mb-1"></p>
+    <p id="resMensaje" class="text-sm font-bold opacity-80"></p>
+    <p id="resSub"    class="text-xs font-bold opacity-60 mt-1"></p>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="w-64 bg-slate-950 p-5 flex flex-col fixed h-full z-50 border-r border-white/5">
+  <div class="flex items-center gap-3 mb-8 px-1">
+    <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-sm">IB</div>
+    <span class="text-white font-black text-lg uppercase italic">Clases</span>
+  </div>
+  <nav class="space-y-1 flex-1">
+    <button onclick="showView('acceso',this)"   class="nav-item active"><i class="fa-solid fa-qrcode w-4 text-emerald-400"></i>Control de Acceso</button>
+    <button onclick="showView('clases',this)"   class="nav-item"><i class="fa-solid fa-layer-group w-4 text-purple-400"></i>Grupos / Clases</button>
+    <button onclick="showView('asistencia',this)" class="nav-item"><i class="fa-solid fa-clipboard-check w-4 text-amber-400"></i>Pase de Lista</button>
+    <button onclick="showView('historial',this)" class="nav-item"><i class="fa-solid fa-chart-bar w-4 text-cyan-400"></i>Estadísticas</button>
+  </nav>
+  <div class="pt-4 border-t border-white/10 text-center">
+    <p id="reloj" class="font-black text-xs text-indigo-400">00:00:00</p>
+    <p class="text-[9px] text-slate-600 font-bold mt-1 uppercase" id="fechaHoyLabel"></p>
+  </div>
+</aside>
+
+<main class="flex-1 ml-64 p-6 overflow-y-auto">
+
+  <!-- CONTROL DE ACCESO -->
+  <div id="view-acceso" class="view active">
+    <h2 class="text-2xl font-black uppercase italic mb-6 text-white">Control de <span class="text-emerald-400">Acceso</span></h2>
+    <div class="grid grid-cols-3 gap-5 mb-6">
+      <div class="glass p-5 border-l-4 border-emerald-500"><p class="text-[9px] font-black text-slate-400 uppercase">Entradas Hoy</p><h3 id="statEntradas" class="text-3xl font-black text-emerald-400">0</h3></div>
+      <div class="glass p-5 border-l-4 border-amber-500"><p class="text-[9px] font-black text-slate-400 uppercase">Con Membresía</p><h3 id="statMemb" class="text-3xl font-black text-amber-400">0</h3></div>
+      <div class="glass p-5 border-l-4 border-indigo-500"><p class="text-[9px] font-black text-slate-400 uppercase">Por Pago</p><h3 id="statPago" class="text-3xl font-black text-indigo-400">0</h3></div>
+    </div>
+    <div class="grid grid-cols-2 gap-5">
+      <div class="glass p-6">
+        <h4 class="font-black text-xs uppercase mb-4 text-slate-300">Escanear Credencial</h4>
+        <button onclick="abrirScanner('acceso')" class="w-full py-6 bg-emerald-600 rounded-2xl font-black text-lg uppercase hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900 flex items-center justify-center gap-3 mb-4">
+          <i class="fa-solid fa-qrcode text-2xl"></i> Activar Scanner
+        </button>
+        <div class="border-t border-white/10 pt-4">
+          <p class="text-[10px] font-black uppercase text-slate-500 mb-2">O buscar por ID</p>
+          <div class="flex gap-2">
+            <input id="accesoManualID" type="text" placeholder="ID del alumno" class="flex-1 p-3 bg-slate-800 border border-white/10 rounded-xl font-bold text-sm text-white uppercase">
+            <button onclick="procesarAcceso(document.getElementById('accesoManualID').value)" class="bg-indigo-600 text-white px-4 rounded-xl font-bold text-xs uppercase hover:bg-indigo-500">OK</button>
+          </div>
+        </div>
+      </div>
+      <div class="glass p-5">
+        <h4 class="font-black text-xs uppercase mb-3 text-slate-300">Últimas Entradas Hoy</h4>
+        <div id="listaEntradasHoy" class="space-y-2 max-h-80 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRUPOS / CLASES -->
+  <div id="view-clases" class="view">
+    <h2 class="text-2xl font-black uppercase italic mb-6 text-white">Grupos / <span class="text-purple-400">Clases</span></h2>
+    <div class="grid grid-cols-3 gap-5">
+      <!-- Lista de clases -->
+      <div class="glass p-5">
+        <h4 class="font-black text-xs uppercase mb-3 text-slate-300">Clases Activas</h4>
+        <div id="listaClasesGrupos" class="space-y-2 max-h-[calc(100vh-240px)] overflow-y-auto"></div>
+      </div>
+      <!-- Detalle clase seleccionada -->
+      <div class="col-span-2 glass p-5">
+        <div id="claseSinSel" class="text-center py-20 text-slate-600">
+          <i class="fa-solid fa-layer-group text-5xl mb-3"></i>
+          <p class="font-black uppercase">Selecciona una clase</p>
+        </div>
+        <div id="claseDetalle" class="hidden">
+          <div class="flex justify-between items-start mb-5">
+            <div>
+              <p class="font-black text-2xl uppercase" id="cdNombre"></p>
+              <p class="text-slate-400 text-sm font-bold" id="cdHorario"></p>
+              <div class="flex gap-3 mt-2">
+                <span class="text-xs font-black px-3 py-1 bg-indigo-900 text-indigo-300 rounded-full" id="cdCupo"></span>
+                <span class="text-xs font-black px-3 py-1 bg-emerald-900 text-emerald-300 rounded-full" id="cdInscritos"></span>
+              </div>
+            </div>
+            <button onclick="abrirScanner('lista')" class="bg-purple-600 text-white px-4 py-2 rounded-xl font-black text-xs uppercase hover:bg-purple-500 flex items-center gap-2">
+              <i class="fa-solid fa-qrcode"></i> Pasar Lista QR
+            </button>
+          </div>
+          <!-- Barra de ocupación -->
+          <div class="mb-5">
+            <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+              <span>Ocupación</span><span id="cdPct"></span>
+            </div>
+            <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+              <div id="cdBarra" class="h-full rounded-full transition-all duration-500"></div>
+            </div>
+          </div>
+          <!-- Alumnos inscritos -->
+          <h5 class="font-black text-xs uppercase text-slate-400 mb-3">Alumnos Inscritos</h5>
+          <div id="listaInscritosClase" class="space-y-2 max-h-64 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASE DE LISTA -->
+  <div id="view-asistencia" class="view">
+    <h2 class="text-2xl font-black uppercase italic mb-6 text-white">Pase de <span class="text-amber-400">Lista</span></h2>
+    <div class="grid grid-cols-4 gap-5 mb-5">
+      <div>
+        <label class="text-[10px] font-black uppercase text-slate-400 block mb-1">Clase / Grupo</label>
+        <select id="selClaseLista" onchange="cargarListaClase()" class="w-full p-3 bg-slate-800 border border-white/10 rounded-xl font-bold text-sm text-white">
+          <option value="">— Selecciona —</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] font-black uppercase text-slate-400 block mb-1">Fecha</label>
+        <input id="fechaLista" type="date" class="w-full p-3 bg-slate-800 border border-white/10 rounded-xl font-bold text-sm text-white">
+      </div>
+      <div class="col-span-2 flex items-end gap-3">
+        <button onclick="abrirScanner('asistencia')" class="flex-1 py-3 bg-amber-500 text-white rounded-xl font-black text-xs uppercase hover:bg-amber-400 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-qrcode"></i>Escanear QR
+        </button>
+        <button onclick="guardarAsistencia()" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase hover:bg-indigo-500">
+          <i class="fa-solid fa-floppy-disk mr-1"></i>Guardar Lista
+        </button>
+      </div>
+    </div>
+    <div id="tablaAsistencia" class="glass p-4">
+      <div id="asistPlaceholder" class="text-center py-12 text-slate-600"><i class="fa-solid fa-clipboard-check text-5xl mb-3"></i><p class="font-black uppercase">Selecciona una clase y fecha</p></div>
+      <div id="asistContenido" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <p id="asistNombreClase" class="font-black uppercase"></p>
+            <div class="flex gap-4 mt-1 text-xs font-black">
+              <span class="text-emerald-400">✅ Presentes: <span id="cntPresente">0</span></span>
+              <span class="text-rose-400">❌ Ausentes: <span id="cntAusente">0</span></span>
+              <span class="text-amber-400">⏰ Tarde: <span id="cntTarde">0</span></span>
+            </div>
+          </div>
+          <button onclick="marcarTodos('presente')" class="bg-emerald-900 text-emerald-300 px-4 py-2 rounded-xl text-xs font-black uppercase hover:bg-emerald-800">✅ Todos Presentes</button>
+        </div>
+        <div id="filaAsistencia" class="space-y-2 max-h-96 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTADÍSTICAS -->
+  <div id="view-historial" class="view">
+    <h2 class="text-2xl font-black uppercase italic mb-6 text-white">Estadísticas y <span class="text-cyan-400">Reportes</span></h2>
+    <div class="grid grid-cols-2 gap-5 mb-5">
+      <div class="glass p-5">
+        <h4 class="font-black text-xs uppercase mb-4 text-slate-300">Mover Alumno de Grupo</h4>
+        <div class="space-y-3">
+          <div>
+            <label class="text-[10px] font-black uppercase text-slate-400 block mb-1">Alumno (ID o nombre)</label>
+            <div class="flex gap-2">
+              <input id="moverAlumnoID" type="text" class="flex-1 p-3 bg-slate-800 border border-white/10 rounded-xl font-bold text-sm text-white uppercase">
+              <button onclick="buscarAlumnoMover()" class="bg-indigo-600 text-white px-4 rounded-xl font-bold text-xs uppercase">Buscar</button>
+            </div>
+            <p id="moverAlumnoInfo" class="text-[10px] text-indigo-400 font-bold mt-1"></p>
+          </div>
+          <div>
+            <label class="text-[10px] font-black uppercase text-slate-400 block mb-1">Clase Origen (actual)</label>
+            <select id="moverOrigen" class="w-full p-3 bg-slate-800 border border-white/10 rounded-xl font-bold text-sm text-white"></select>
+          </div>
+          <div>
+            <label class="text-[10px] font-black uppercase text-slate-400 block mb-1">Clase Destino (nueva)</label>
+            <select id="moverDestino" class="w-full p-3 bg-slate-800 border border-white/10 rounded-xl font-bold text-sm text-white"></select>
+          </div>
+          <button onclick="moverAlumnoGrupo()" class="w-full py-3 bg-purple-600 text-white rounded-xl font-black text-xs uppercase hover:bg-purple-500">
+            <i class="fa-solid fa-right-left mr-2"></i>Mover al Nuevo Grupo
+          </button>
+        </div>
+      </div>
+      <div class="glass p-5">
+        <h4 class="font-black text-xs uppercase mb-4 text-slate-300">Asistencia por Clase (últimos 7 días)</h4>
+        <div id="statsClases" class="space-y-3"></div>
+      </div>
+    </div>
+    <div class="glass p-5">
+      <h4 class="font-black text-xs uppercase mb-4 text-slate-300">Historial de Asistencias</h4>
+      <div class="flex gap-3 mb-4">
+        <select id="filtroClaseStat" onchange="cargarHistorialAsist()" class="p-2.5 bg-slate-800 border border-white/10 rounded-xl font-bold text-xs text-white">
+          <option value="">Todas las clases</option>
+        </select>
+        <input id="filtroFechaStat" type="date" onchange="cargarHistorialAsist()" class="p-2.5 bg-slate-800 border border-white/10 rounded-xl font-bold text-xs text-white">
+      </div>
+      <div id="tablaHistorialAsist" class="space-y-2 max-h-72 overflow-y-auto"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const FIREBASE_CONFIG={apiKey:"AIzaSyBxBmuQY5n5ecf5Vy6vLPu_qKP726IaLzs",authDomain:"gymnastics-club-by-ibime.firebaseapp.com",databaseURL:"https://gymnastics-club-by-ibime-default-rtdb.firebaseio.com/",projectId:"gymnastics-club-by-ibime",appId:"1:849277925066:web:6ef91b240277fe24846633"};
+firebase.initializeApp(FIREBASE_CONFIG);
+const db=firebase.firestore(),rtdb=firebase.database();
+
+let scanner=null,modoScanner='acceso',claseActiva=null,clasesCatalogo=[],asistenciaActual={},alumnoMoverInfo=null;
+const hoy=new Date().toISOString().split('T')[0];
+
+// ── TOAST ────────────────────────────────────────────────────────
+function toast(m,i='✅',ms=3000){
+    document.getElementById('tMsg').innerText=m;document.getElementById('tIcon').innerText=i;
+    const el=document.getElementById('toast');el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'),ms);
+}
+// ── RELOJ ───────────────────────────────────────────────────────
+setInterval(()=>document.getElementById('reloj').innerText=new Date().toLocaleTimeString('es-MX'),1000);
+document.getElementById('fechaHoyLabel').innerText=new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+
+// ── NAV ─────────────────────────────────────────────────────────
+function showView(id,btn){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    if(btn)btn.classList.add('active');
+    if(id==='historial')cargarStatsClases();
+    if(id==='asistencia')cargarSelectClases();
+}
+
+// ── CATÁLOGO DE CLASES (tiempo real) ────────────────────────────
+db.collection('catalogo').where('tipo','==','clase').onSnapshot(snap=>{
+    clasesCatalogo=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderClasesGrupos();
+    poblarSelectsClases();
+});
+
+function renderClasesGrupos(){
+    const l=document.getElementById('listaClasesGrupos');
+    l.innerHTML=clasesCatalogo.length===0?'<p class="text-slate-600 text-xs font-black uppercase text-center py-8">Sin clases</p>':
+    clasesCatalogo.map(c=>{
+        const disp=c.cupoDisponible??c.cupo??0;
+        const tot=c.cupo??30;
+        const pct=Math.max(0,Math.min(100,(disp/tot)*100));
+        const col=pct>50?'bg-emerald-500':pct>20?'bg-amber-500':'bg-rose-500';
+        return`<div onclick="seleccionarClase('${c.id}')" class="clase-card glass p-3 border border-white/5 ${claseActiva?.id===c.id?'active-clase':''}">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">${c.icon||'🏋️'}</span>
+                <div><p class="font-black text-xs uppercase text-white">${c.nombre}</p>
+                <p class="text-[9px] text-slate-400 font-bold">${c.inicio||'--'}–${c.fin||'--'}</p></div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden"><div class="${col} h-full rounded-full" style="width:${100-pct}%"></div></div>
+                <p class="text-[9px] font-black text-slate-400">${tot-disp}/${tot}</p>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function seleccionarClase(id){
+    claseActiva=clasesCatalogo.find(c=>c.id===id);if(!claseActiva)return;
+    renderClasesGrupos();
+    document.getElementById('claseSinSel').classList.add('hidden');
+    document.getElementById('claseDetalle').classList.remove('hidden');
+    document.getElementById('cdNombre').innerText=claseActiva.nombre;
+    document.getElementById('cdHorario').innerText=(claseActiva.inicio||'--')+' – '+(claseActiva.fin||'--');
+    const tot=claseActiva.cupo||30;
+    const disp=claseActiva.cupoDisponible??tot;
+    const ins=tot-disp;
+    document.getElementById('cdCupo').innerText='Cupo: '+tot;
+    document.getElementById('cdInscritos').innerText='Inscritos: '+ins;
+    const pct=Math.round((ins/tot)*100);
+    document.getElementById('cdPct').innerText=pct+'%';
+    const col=pct<70?'#10b981':pct<90?'#f59e0b':'#ef4444';
+    document.getElementById('cdBarra').style.cssText='width:'+pct+'%;background:'+col;
+    // Cargar alumnos inscritos (de reservas confirmadas)
+    const snap=await db.collection('reservas').where('claseId','==',id).where('estado','==','confirmada').get();
+    const l=document.getElementById('listaInscritosClase');
+    if(snap.empty){l.innerHTML='<p class="text-slate-600 text-xs font-black uppercase text-center py-6">Sin alumnos confirmados aún</p>';return;}
+    l.innerHTML=snap.docs.map(d=>{const r=d.data();return`<div class="flex justify-between items-center p-3 bg-white/5 rounded-xl border border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-indigo-700 rounded-xl flex items-center justify-center font-black text-xs">${r.alumnoNombre?.charAt(0)||'?'}</div>
+            <div><p class="font-black text-xs uppercase text-white">${r.alumnoNombre||r.alumnoId}</p>
+            <p class="text-[9px] text-slate-400 font-mono">${r.alumnoId}</p></div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="moverAlumnoDirecto('${r.alumnoId}','${id}')" class="text-purple-400 hover:text-purple-300 text-xs" title="Mover de grupo"><i class="fa-solid fa-right-left"></i></button>
+            <button onclick="quitarDeClase('${d.id}','${id}')" class="text-rose-400 hover:text-rose-300 text-xs" title="Quitar de clase"><i class="fa-solid fa-user-minus"></i></button>
+        </div>
+    </div>`;}).join('');
+}
+
+async function quitarDeClase(reservaId,claseId){
+    if(!confirm('¿Quitar al alumno de esta clase? Se liberará su lugar.'))return;
+    try{
+        await db.collection('catalogo').doc(claseId).update({cupoDisponible:firebase.firestore.FieldValue.increment(1)});
+        await db.collection('reservas').doc(reservaId).delete();
+        toast('Alumno removido de la clase','🗑️');
+        seleccionarClase(claseId);
+    }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+// ── PASE DE LISTA ─────────────────────────────────────────────────
+function poblarSelectsClases(){
+    ['selClaseLista','moverOrigen','moverDestino','filtroClaseStat'].forEach(sid=>{
+        const sel=document.getElementById(sid); if(!sel)return;
+        const val=sel.value;
+        sel.innerHTML=(sid==='filtroClaseStat'?'<option value="">Todas las clases</option>':'<option value="">— Selecciona —</option>')+
+            clasesCatalogo.map(c=>`<option value="${c.id}">${c.nombre} (${c.inicio||'--'}–${c.fin||'--'})</option>`).join('');
+        if(val)sel.value=val;
+    });
+    document.getElementById('fechaLista').value=hoy;
+}
+function cargarSelectClases(){poblarSelectsClases();}
+
+async function cargarListaClase(){
+    const claseId=document.getElementById('selClaseLista').value;
+    const fecha  =document.getElementById('fechaLista').value||hoy;
+    if(!claseId){document.getElementById('asistPlaceholder').classList.remove('hidden');document.getElementById('asistContenido').classList.add('hidden');return;}
+    // Cargar alumnos con reserva confirmada
+    const snap=await db.collection('reservas').where('claseId','==',claseId).where('estado','==','confirmada').get();
+    // Cargar pre-reservas pendientes de pago
+    const preSnap=await db.collection('reservas').where('claseId','==',claseId).where('estado','==','pre-reserva').get();
+    const clase=clasesCatalogo.find(c=>c.id===claseId);
+    document.getElementById('asistNombreClase').innerText=(clase?.nombre||'Clase')+' — '+fecha;
+    // Cargar asistencias ya guardadas para esta fecha/clase
+    const asistSnap=await db.collection('asistencias').where('claseId','==',claseId).where('fecha','==',fecha).get();
+    const asistMap={};
+    asistSnap.docs.forEach(d=>{asistMap[d.data().alumnoId]=d.data().tipo;});
+    asistenciaActual={};
+    document.getElementById('asistPlaceholder').classList.add('hidden');
+    document.getElementById('asistContenido').classList.remove('hidden');
+    if(snap.empty&&preSnap.empty){document.getElementById('filaAsistencia').innerHTML='<p class="text-slate-600 text-xs font-black uppercase text-center py-6">Sin alumnos inscritos en esta clase</p>';actualizarContadores();return;}
+    snap.docs.forEach(d=>{asistenciaActual[d.data().alumnoId]={nombre:d.data().alumnoNombre||d.data().alumnoId,estado:asistMap[d.data().alumnoId]||'ausente',pendiente:false};});
+    // Pre-reservas: van al mapa con flag pendiente=true (no pueden pasar lista)
+    preSnap.docs.forEach(d=>{
+        const aid=d.data().alumnoId;
+        if(!asistenciaActual[aid]) // no sobreescribir si ya tiene confirmada
+            asistenciaActual[aid]={nombre:d.data().alumnoNombre||aid,estado:'pendiente',pendiente:true};
+    });
+    renderFilaAsistencia();
+}
+
+function renderFilaAsistencia(){
+    const f=document.getElementById('filaAsistencia');
+    // Separar confirmados vs pendientes de pago
+    const confirmados=Object.entries(asistenciaActual).filter(([,i])=>!i.pendiente);
+    const pendientes=Object.entries(asistenciaActual).filter(([,i])=>i.pendiente);
+    let html='';
+    if(confirmados.length){
+        html+=confirmados.map(([id,info])=>`<div class="flex justify-between items-center p-3 bg-white/5 rounded-xl border border-white/5">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-slate-700 rounded-xl flex items-center justify-center font-black text-xs">${info.nombre?.charAt(0)||'?'}</div>
+            <div><p class="font-black text-xs uppercase text-white">${info.nombre}</p><p class="text-[9px] text-slate-500 font-mono">${id}</p></div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="setAsist('${id}','presente')" class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase transition-all ${info.estado==='presente'?'bg-emerald-500 text-white':'bg-white/10 text-slate-400 hover:bg-white/20'}">✅ Sí</button>
+            <button onclick="setAsist('${id}','ausente')" class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase transition-all ${info.estado==='ausente'?'bg-red-500 text-white':'bg-white/10 text-slate-400 hover:bg-white/20'}">❌ No</button>
+            <button onclick="setAsist('${id}','justificado')" class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase transition-all ${info.estado==='justificado'?'bg-amber-500 text-white':'bg-white/10 text-slate-400 hover:bg-white/20'}">📋 Just</button>
+        </div>
+        </div>`).join('');
+    }
+    if(pendientes.length){
+        html+=`<div class="mt-3 mb-1 px-2"><p class="text-[9px] font-black uppercase text-amber-400 tracking-widest">⚠️ Pendientes de pago — no pueden pasar lista</p></div>`;
+        html+=pendientes.map(([id,info])=>`<div class="flex justify-between items-center p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 opacity-70">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-amber-900/40 rounded-xl flex items-center justify-center font-black text-xs text-amber-400">!</div>
+            <div>
+                <p class="font-black text-xs uppercase text-amber-200">${info.nombre}</p>
+                <p class="text-[9px] text-amber-500 font-mono">${id} · Sin pago confirmado</p>
+            </div>
+        </div>
+        <span class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">💳 Pendiente</span>
+        </div>`).join('');
+    }
+    f.innerHTML=html||'<p class="text-slate-600 text-xs font-black uppercase text-center py-6">Sin alumnos</p>';
+    actualizarContadores();
+}
+function setAsist(id,estado){
+    if(asistenciaActual[id]?.pendiente){toast('⚠️ Alumno sin pago confirmado');return;}if(asistenciaActual[id])asistenciaActual[id].estado=estado;renderFilaAsistencia();}
+function marcarTodos(estado){Object.keys(asistenciaActual).forEach(id=>asistenciaActual[id].estado=estado);renderFilaAsistencia();}
+function actualizarContadores(){
+    const vals=Object.values(asistenciaActual);
+    document.getElementById('cntPresente').innerText=vals.filter(v=>v.estado==='presente').length;
+    document.getElementById('cntAusente').innerText =vals.filter(v=>v.estado==='ausente').length;
+    document.getElementById('cntTarde').innerText   =vals.filter(v=>v.estado==='tarde').length;
+}
+async function guardarAsistencia(){
+    const claseId=document.getElementById('selClaseLista').value;
+    const fecha  =document.getElementById('fechaLista').value||hoy;
+    if(!claseId){toast('Selecciona una clase','⚠️');return;}
+    const clase=clasesCatalogo.find(c=>c.id===claseId);
+    try{
+        const batch=db.batch();
+        // Eliminar registros anteriores de esta fecha/clase
+        const prev=await db.collection('asistencias').where('claseId','==',claseId).where('fecha','==',fecha).get();
+        prev.docs.forEach(d=>batch.delete(d.ref));
+        // Agregar nuevos
+        Object.entries(asistenciaActual).forEach(([alumnoId,info])=>{
+            const ref=db.collection('asistencias').doc();
+            batch.set(ref,{alumnoId,alumnoNombre:info.nombre,claseId,claseNombre:clase?.nombre||'',fecha,tipo:info.estado,timestamp:Date.now()});
+        });
+        await batch.commit();
+        toast('Lista guardada ✅','📋',3000);
+    }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+// ── CONTROL DE ACCESO ─────────────────────────────────────────────
+async function procesarAcceso(rawID){
+    const id=String(rawID||'').split('|')[0].trim().toUpperCase();if(!id)return;
+    try{
+        const snap=await db.collection('alumnos').doc(id).get();
+        if(!snap.exists){mostrarResultadoAcceso('fail','ID no encontrado',id,'Matrícula inválida');return;}
+        const data=snap.data();
+        // ── Bloquear si INACTIVO ─────────────────────────────────────
+        if(data.estatus==='INACTIVO'){
+            mostrarResultadoAcceso('fail',data.nombre||id,'Acceso Denegado','Inscripción no pagada — pasar a recepción');
+            return;
+        }
+        // ── Membresía vencida ─────────────────────────────────────
+        const vf=data.vencimiento?new Date(data.vencimiento):new Date(0);
+        if(vf<new Date()){
+            mostrarResultadoAcceso('fail',data.nombre||id,'Membresía Vencida','Requiere renovación en recepción');
+            return;
+        }
+        // ── Orden pendiente en RTDB ───────────────────────────────
+        const rtSnap=await rtdb.ref('estatus_acceso/'+id).get();
+        const orden=rtSnap.val();
+        const tipo=(orden&&orden.monto>0)?'pago':'membresia';
+        // Registrar asistencia
+        await db.collection('asistencias').add({alumnoId:id,alumnoNombre:data.nombre||id,fecha:hoy,hora:new Date().toLocaleTimeString('es-MX'),tipo,timestamp:Date.now()});
+        if(tipo==='pago') mostrarResultadoAcceso('pend',data.nombre||id,'Acceso Válido — Orden Pendiente','Pagar en recepción');
+        else mostrarResultadoAcceso('ok',data.nombre||id,'Acceso Concedido',data.nivel||'');
+        actualizarStatsAcceso();
+    }catch(e){mostrarResultadoAcceso('fail','Error',e.message,'');}
+}
+function mostrarResultadoAcceso(tipo,nombre,msg,sub){
+    const el=document.getElementById('resultadoAcceso');
+    const clases={ok:'acceso-ok',fail:'acceso-fail',pend:'acceso-pend'};
+    el.className=clases[tipo]+' mt-6 w-72 rounded-2xl p-5 text-center';
+    el.classList.remove('hidden');
+    document.getElementById('resIcon').innerText=tipo==='ok'?'✅':tipo==='pend'?'⏳':'❌';
+    document.getElementById('resNombre').innerText=nombre;
+    document.getElementById('resMensaje').innerText=msg;
+    document.getElementById('resSub').innerText=sub;
+    hablarAcceso(tipo,nombre);
+    if(tipo==='ok'||tipo==='pend') setTimeout(()=>{el.classList.add('hidden');cerrarScanner();},3000);
+}
+function hablarAcceso(tipo,nombre){
+    if(!window.speechSynthesis)return;
+    const msgs={ok:'Acceso concedido. Bienvenido '+nombre,fail:'Acceso denegado',pend:'Acceso válido. Orden pendiente de pago'};
+    const u=new SpeechSynthesisUtterance(msgs[tipo]||'');
+    u.lang='es-MX';u.volume=1;u.rate=1;
+    window.speechSynthesis.speak(u);
+}
+async function actualizarStatsAcceso(){
+    const snap=await db.collection('asistencias').where('fecha','==',hoy).get();
+    document.getElementById('statEntradas').innerText=snap.size;
+    document.getElementById('statMemb').innerText=snap.docs.filter(d=>d.data().tipo==='membresia').length;
+    document.getElementById('statPago').innerText =snap.docs.filter(d=>d.data().tipo==='pago').length;
+    const l=document.getElementById('listaEntradasHoy');
+    const sorted=snap.docs.sort((a,b)=>b.data().timestamp-a.data().timestamp).slice(0,15);
+    l.innerHTML=sorted.map(d=>{const a=d.data();return`<div class="flex justify-between items-center p-2.5 bg-white/5 rounded-xl border border-white/5 mb-1">
+        <div><p class="font-black text-xs uppercase text-white">${a.alumnoNombre||a.alumnoId}</p>
+        <p class="text-[9px] text-slate-400 font-bold">${a.hora||'--'}</p></div>
+        <span class="text-[9px] font-black px-2 py-1 rounded-full ${a.tipo==='membresia'?'bg-emerald-900 text-emerald-300':'bg-amber-900 text-amber-300'}">${a.tipo==='membresia'?'Membresía':'Pago'}</span>
+    </div>`;}).join('');
+}
+window.addEventListener('DOMContentLoaded',actualizarStatsAcceso);
+
+// ── SCANNER ──────────────────────────────────────────────────────
+function abrirScanner(modo){
+    modoScanner=modo;
+    document.getElementById('scannerModo').innerText='Modo: '+(modo==='acceso'?'Acceso':modo==='lista'?'Clase '+claseActiva?.nombre:'Asistencia');
+    document.getElementById('resultadoAcceso').classList.add('hidden');
+    document.getElementById('scannerOverlay').classList.add('active');
+    scanner=new Html5Qrcode('scannerBox');
+    scanner.start({facingMode:'environment'},{fps:10,qrbox:250},onScan).catch(e=>toast('Error cámara','❌'));
+}
+function cerrarScanner(){
+    scanner?.stop().catch(()=>{});scanner=null;
+    document.getElementById('scannerOverlay').classList.remove('active');
+}
+function onScan(text){
+    const id=text.split('|')[0];
+    if(modoScanner==='acceso') procesarAcceso(id);
+    else if(modoScanner==='lista') pasarListaQR(id);
+    else if(modoScanner==='asistencia') marcarAsistenciaQR(id);
+}
+function pasarListaQR(id){
+    const clase=clasesCatalogo.find(c=>c.id===claseActiva?.id);
+    toast((clase?.nombre||'Clase')+': '+id+' ✅','📋');
+    setTimeout(cerrarScanner,1500);
+}
+function marcarAsistenciaQR(id){
+    if(asistenciaActual[id]?.pendiente){toast('⚠️ '+( asistenciaActual[id].nombre||id)+' tiene pago pendiente');return;}
+    if(asistenciaActual[id.toUpperCase()]){
+        setAsist(id.toUpperCase(),'presente');
+        toast('Presente: '+asistenciaActual[id.toUpperCase()]?.nombre,'✅');
+        setTimeout(cerrarScanner,1500);
+    } else {
+        toast('Alumno no está en la lista de esta clase','⚠️');
+    }
+}
+
+// ── MOVER ALUMNOS ─────────────────────────────────────────────────
+async function buscarAlumnoMover(){
+    const q=document.getElementById('moverAlumnoID').value.trim().toUpperCase();
+    if(!q)return;
+    try{
+        let snap=await db.collection('alumnos').doc(q).get();
+        if(!snap.exists){
+            const byName=await db.collection('alumnos').where('nombre','>=',q).where('nombre','<=',q+'\uf8ff').limit(1).get();
+            if(byName.empty){toast('Alumno no encontrado','❌');return;}
+            snap=byName.docs[0];
+        }
+        alumnoMoverInfo={id:snap.id||snap.data().id,...(snap.data?.()??snap)};
+        document.getElementById('moverAlumnoInfo').innerText='✅ '+alumnoMoverInfo.nombre+' ('+alumnoMoverInfo.id+')';
+    }catch(e){toast('Error: '+e.message,'❌');}
+}
+function moverAlumnoDirecto(alumnoId,origenId){
+    document.getElementById('moverAlumnoID').value=alumnoId;
+    buscarAlumnoMover();
+    document.getElementById('moverOrigen').value=origenId;
+    showView('historial',document.querySelector('.nav-item:last-child'));
+}
+async function moverAlumnoGrupo(){
+    if(!alumnoMoverInfo){toast('Busca un alumno primero','⚠️');return;}
+    const origen =document.getElementById('moverOrigen').value;
+    const destino=document.getElementById('moverDestino').value;
+    if(!origen||!destino){toast('Selecciona clases origen y destino','⚠️');return;}
+    if(origen===destino){toast('Origen y destino son iguales','⚠️');return;}
+    const claseDest=clasesCatalogo.find(c=>c.id===destino);
+    if(!claseDest){toast('Clase destino no encontrada','❌');return;}
+    if((claseDest.cupoDisponible??claseDest.cupo??0)<=0){toast('Sin lugares en la clase destino','🔴');return;}
+    try{
+        // Buscar reserva origen
+        const resOrig=await db.collection('reservas').where('alumnoId','==',alumnoMoverInfo.id).where('claseId','==',origen).where('estado','==','confirmada').get();
+        if(resOrig.empty){toast('El alumno no está inscrito en la clase origen','⚠️');return;}
+        const batch=db.batch();
+        // Liberar cupo en origen
+        batch.update(db.collection('catalogo').doc(origen),{cupoDisponible:firebase.firestore.FieldValue.increment(1)});
+        // Eliminar reserva origen
+        batch.delete(resOrig.docs[0].ref);
+        // Crear reserva destino
+        const nuevaRes=db.collection('reservas').doc();
+        batch.set(nuevaRes,{alumnoId:alumnoMoverInfo.id,alumnoNombre:alumnoMoverInfo.nombre,claseId:destino,claseNombre:claseDest.nombre,claseInicio:claseDest.inicio||'',claseFin:claseDest.fin||'',estado:'confirmada',alertaMostrada:false,timestamp:Date.now(),notaMov:'Movimiento manual desde '+origen});
+        // Descontar cupo en destino
+        batch.update(db.collection('catalogo').doc(destino),{cupoDisponible:firebase.firestore.FieldValue.increment(-1)});
+        await batch.commit();
+        toast('Alumno movido a '+claseDest.nombre,'🔄',4000);
+        document.getElementById('moverAlumnoInfo').innerText='';
+        document.getElementById('moverAlumnoID').value='';
+        alumnoMoverInfo=null;
+    }catch(e){toast('Error: '+e.message,'❌');}
+}
+
+// ── ESTADÍSTICAS ──────────────────────────────────────────────────
+async function cargarStatsClases(){
+    const hace7=new Date();hace7.setDate(hace7.getDate()-7);
+    const fechaMin=hace7.toISOString().split('T')[0];
+    const snap=await db.collection('asistencias').where('fecha','>=',fechaMin).get();
+    const porClase={};
+    snap.docs.forEach(d=>{const c=d.data().claseNombre||d.data().claseId;porClase[c]=(porClase[c]||0)+1;});
+    const l=document.getElementById('statsClases');
+    const entries=Object.entries(porClase).sort((a,b)=>b[1]-a[1]);
+    const max=entries[0]?.[1]||1;
+    l.innerHTML=entries.length===0?'<p class="text-slate-600 text-xs font-black uppercase text-center py-4">Sin datos</p>':
+    entries.map(([nombre,cnt])=>`<div>
+        <div class="flex justify-between text-xs font-black mb-1"><span class="text-white uppercase">${nombre}</span><span class="text-slate-400">${cnt} asistencias</span></div>
+        <div class="h-2 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-indigo-500 rounded-full" style="width:${(cnt/max)*100}%"></div></div>
+    </div>`).join('');
+}
+async function cargarHistorialAsist(){
+    const claseId=document.getElementById('filtroClaseStat').value;
+    const fecha  =document.getElementById('filtroFechaStat').value;
+    let q=db.collection('asistencias').orderBy('timestamp','desc').limit(50);
+    if(claseId) q=db.collection('asistencias').where('claseId','==',claseId).orderBy('timestamp','desc').limit(50);
+    if(fecha)   q=db.collection('asistencias').where('fecha','==',fecha).orderBy('timestamp','desc').limit(50);
+    const snap=await q.get();
+    const t=document.getElementById('tablaHistorialAsist');
+    t.innerHTML=snap.empty?'<p class="text-slate-600 text-xs font-black uppercase text-center py-4">Sin registros</p>':
+    snap.docs.map(d=>{const a=d.data();return`<div class="flex justify-between items-center p-2.5 bg-white/5 rounded-xl border border-white/5">
+        <div><p class="font-black text-xs uppercase text-white">${a.alumnoNombre||a.alumnoId}</p>
+        <p class="text-[9px] text-slate-400">${a.claseNombre||''} · ${a.fecha} ${a.hora||''}</p></div>
+        <span class="text-[9px] font-black px-2 py-1 rounded-full ${a.tipo==='presente'?'chip-presente':a.tipo==='tarde'?'chip-tard':'chip-ausente'}">${a.tipo||'presente'}</span>
+    </div>`;}).join('');
+}
+</script>
+</body>
+</html>
