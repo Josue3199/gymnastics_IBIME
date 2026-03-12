@@ -1,0 +1,870 @@
+/* =================================================================
+   IBIME GYMNASTICS CLUB — Estilos del Módulo Admin/Clases
+   modules.css: estilos compartidos, módulo de clases, UI components
+   ================================================================= */
+
+/* MÓDULO: ADMIN DE CLASES */
+/* ═════════════════════════════════════════════════════════════�� */
+#seccionClases {
+    display: none;
+}
+
+#seccionClases.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeInClases {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Variables del módulo de clases */
+#seccionClases {
+    --clases-bg: #080c14;
+    --clases-surface: #0e1520;
+    --clases-surface2: #111827;
+    --clases-border: rgba(255,255,255,.07);
+    --clases-border2: rgba(255,255,255,.12);
+    --clases-accent: #1e3a6e;
+    --clases-accent2: #c8382a;
+    --clases-fitness: #f97316;
+    --clases-gimnasia: #6366f1;
+    --clases-txt: #e2e8f0;
+    --clases-muted: #64748b;
+    --clases-danger: #ef4444;
+}
+
+/* Header del módulo */
+#seccionClases .clases-header {
+    background: linear-gradient(135deg, #090d18 0%, #0e1520 100%);
+    border-bottom: 1px solid var(--clases-border);
+    padding: 1.1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+}
+
+#seccionClases .clases-logo {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+#seccionClases .clases-logo-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(200,56,42,.15);
+    border: 1px solid rgba(200,56,42,.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--clases-accent2);
+    font-size: 1.1rem;
+}
+
+#seccionClases .clases-logo-txt {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: white;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+#seccionClases .clases-logo-txt span {
+    color: var(--clases-accent2);
+}
+
+#seccionClases .clases-logo-sub {
+    font-size: .58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    color: var(--clases-muted);
+    margin-top: 1px;
+}
+
+#seccionClases .clases-header-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+#seccionClases .clases-hstat {
+    text-align: center;
+}
+
+#seccionClases .clases-hstat-val {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    line-height: 1;
+    color: white;
+}
+
+#seccionClases .clases-hstat-lbl {
+    font-size: .58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--clases-muted);
+    letter-spacing: .1em;
+}
+
+/* Tabs del módulo */
+#seccionClases .clases-tabs {
+    display: flex;
+    gap: .4rem;
+    padding: 0 0 1.2rem;
+    border-bottom: 1px solid var(--clases-border);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+#seccionClases .clases-tab {
+    padding: .55rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .2s;
+    background: none;
+    color: var(--clases-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+#seccionClases .clases-tab.fit { color: var(--clases-fitness); border-color: rgba(249,115,22,.25); }
+#seccionClases .clases-tab.fit.active { background: rgba(249,115,22,.12); border-color: var(--clases-fitness); }
+#seccionClases .clases-tab.gym { color: var(--clases-gimnasia); border-color: rgba(99,102,241,.25); }
+#seccionClases .clases-tab.gym.active { background: rgba(99,102,241,.12); border-color: var(--clases-gimnasia); }
+#seccionClases .clases-tab.pub { color: var(--clases-accent2); border-color: rgba(200,56,42,.25); }
+#seccionClases .clases-tab.pub.active { background: rgba(200,56,42,.1); border-color: var(--clases-accent2); }
+#seccionClases .clases-tab.imp { color: #a5b4fc; border-color: rgba(165,180,252,.2); }
+#seccionClases .clases-tab.imp.active { background: rgba(165,180,252,.08); border-color: #a5b4fc; }
+
+/* Layout */
+#seccionClases .clases-view { display: none; }
+#seccionClases .clases-view.active { display: block; animation: fadeInClases .25s ease; }
+
+/* ══ GRILLA DE HORARIOS (nuevo diseño) ══ */
+#seccionClases .clases-grid-wrap {
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid var(--clases-border);
+}
+
+#seccionClases .clases-horario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+}
+
+#seccionClases .clases-horario-titulo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+#seccionClases .clases-horario-titulo .hl  { color: var(--clases-fitness); }
+#seccionClases .clases-horario-titulo .hlg { color: var(--clases-gimnasia); }
+
+#seccionClases .clases-grid-horario {
+    display: grid;
+    grid-template-columns: 72px repeat(6, minmax(130px, 1fr));
+    gap: 0;
+    background: #090d18;
+    min-width: 750px;
+}
+
+/* Cabeceras de días */
+#seccionClases .clases-gh-head {
+    background: #090d18;
+    color: var(--clases-muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    text-align: center;
+    font-size: .62rem;
+    font-weight: 800;
+    padding: .75rem .4rem;
+    border-bottom: 1px solid var(--clases-border);
+    border-right: 1px solid rgba(255,255,255,.04);
+}
+
+#seccionClases .clases-gh-head:last-child { border-right: none; }
+
+/* Celdas de hora */
+#seccionClases .clases-gh-hora {
+    background: #090d18;
+    color: var(--clases-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .5px;
+    padding: .5rem .2rem;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    border-right: 1px solid var(--clases-border);
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+/* Celdas de contenido */
+#seccionClases .clases-gh-cell {
+    background: #0b1120;
+    padding: .35rem .3rem;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    border-right: 1px solid rgba(255,255,255,.04);
+    vertical-align: top;
+    min-height: 60px;
+}
+
+#seccionClases .clases-gh-cell:nth-child(7n) { border-right: none; }
+
+/* Celda en Firebase — indicador sutil */
+#seccionClases .clases-celda-fb {
+    position: relative;
+}
+
+/* La celda clickeable */
+#seccionClases .clases-celda {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-height: 54px;
+    cursor: pointer;
+    transition: background .15s;
+    border-radius: 6px;
+    padding: 2px;
+    height: 100%;
+}
+
+#seccionClases .clases-celda:hover { background: rgba(255,255,255,.03); }
+#seccionClases .clases-celda.editando     { background: rgba(99,102,241,.08);  outline: 1.5px solid var(--clases-gimnasia); border-radius: 6px; }
+#seccionClases .clases-celda.editando-fit { background: rgba(249,115,22,.08);  outline: 1.5px solid var(--clases-fitness);  border-radius: 6px; }
+
+/* ══ CHIPS DE CLASES (nuevo diseño visual) ══ */
+#seccionClases .clases-clase-chip {
+    border-radius: 5px;
+    padding: 3px 7px;
+    font-size: .62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    transition: filter .15s;
+}
+
+#seccionClases .clases-clase-chip:hover { filter: brightness(1.15); }
+
+#seccionClases .clases-clase-chip .clases-chip-prof {
+    display: block;
+    font-size: .52rem;
+    font-weight: 600;
+    opacity: .75;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-top: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botón agregar vacío */
+#seccionClases .clases-chip-add {
+    border-radius: 5px;
+    padding: 4px 7px;
+    font-size: .6rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.2);
+    border: 1px dashed rgba(255,255,255,.1);
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+    margin: 2px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+}
+
+#seccionClases .clases-chip-add:hover {
+    border-color: rgba(255,255,255,.3);
+    color: rgba(255,255,255,.5);
+    background: rgba(255,255,255,.03);
+}
+
+/* ══ COLORES CHIPS (fondo sólido oscuro + borde de color) ══ */
+#seccionClases .chip-yoga       { background: rgba(168,85,247,.18);  color: #d8b4fe; border: 1.5px solid rgba(168,85,247,.5); }
+#seccionClases .chip-step       { background: rgba(249,115,22,.18);  color: #fdba74; border: 1.5px solid rgba(249,115,22,.5); }
+#seccionClases .chip-dancefit   { background: rgba(236,72,153,.18);  color: #f9a8d4; border: 1.5px solid rgba(236,72,153,.5); }
+#seccionClases .chip-pilates    { background: rgba(20,184,166,.18);  color: #5eead4; border: 1.5px solid rgba(20,184,166,.5); }
+#seccionClases .chip-gap        { background: rgba(59,130,246,.18);  color: #93c5fd; border: 1.5px solid rgba(59,130,246,.5); }
+#seccionClases .chip-powerjump  { background: rgba(234,179,8,.18);   color: #fde047; border: 1.5px solid rgba(234,179,8,.5); }
+#seccionClases .chip-poledance  { background: rgba(239,68,68,.18);   color: #fca5a5; border: 1.5px solid rgba(239,68,68,.5); }
+#seccionClases .chip-heeldance  { background: rgba(244,114,182,.22); color: #fbcfe8; border: 1.5px solid rgba(244,114,182,.5); }
+#seccionClases .chip-sculpt     { background: rgba(34,197,94,.18);   color: #86efac; border: 1.5px solid rgba(34,197,94,.5); }
+#seccionClases .chip-babygym    { background: rgba(251,191,36,.18);  color: #fcd34d; border: 1.5px solid rgba(251,191,36,.5); }
+#seccionClases .chip-gaf        { background: rgba(99,102,241,.22);  color: #c7d2fe; border: 1.5px solid rgba(99,102,241,.5); }
+#seccionClases .chip-gr         { background: rgba(16,185,129,.18);  color: #6ee7b7; border: 1.5px solid rgba(16,185,129,.5); }
+#seccionClases .chip-telas      { background: rgba(236,72,153,.18);  color: #f9a8d4; border: 1.5px solid rgba(236,72,153,.5); }
+#seccionClases .chip-parkour    { background: rgba(249,115,22,.18);  color: #fdba74; border: 1.5px solid rgba(249,115,22,.5); }
+#seccionClases .chip-gav        { background: rgba(99,102,241,.22);  color: #a5b4fc; border: 1.5px solid rgba(99,102,241,.5); }
+#seccionClases .chip-adultgym   { background: rgba(100,116,139,.22); color: #cbd5e1; border: 1.5px solid rgba(100,116,139,.5); }
+#seccionClases .chip-default    { background: rgba(100,116,139,.18); color: #94a3b8; border: 1.5px solid rgba(100,116,139,.4); }
+
+/* ══ PANEL DE EDICIÓN INLINE ══ */
+#seccionClases .clases-edit-inline {
+    background: #0e1520;
+    border: 1px solid var(--clases-border2);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.2rem;
+    animation: fadeInClases .2s ease;
+}
+
+#seccionClases .clases-edit-inline.hidden { display: none !important; }
+
+/* Panel lateral (heredado, ya no se usa para fit/gym pero se mantiene) */
+#seccionClases .clases-sidebar-panel {
+    background: var(--clases-surface);
+    border: 1px solid var(--clases-border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    position: sticky;
+    top: 76px;
+}
+
+/* Formularios de edición */
+#seccionClases .clases-edit-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: .8rem;
+}
+
+#seccionClases .clases-edit-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: .65rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+}
+
+#seccionClases .clases-edit-chip .x {
+    font-size: .7rem;
+    opacity: .6;
+    margin-left: 2px;
+}
+
+#seccionClases .clases-edit-chip:hover .x {
+    opacity: 1;
+}
+
+#seccionClases .clases-add-row {
+    display: flex;
+    gap: .4rem;
+    margin-bottom: .6rem;
+}
+
+#seccionClases .clases-add-row input {
+    flex: 1;
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--clases-border2);
+    border-radius: 7px;
+    padding: .4rem .6rem;
+    color: var(--clases-txt);
+    font-size: .7rem;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
+}
+
+#seccionClases .clases-add-row input:focus {
+    border-color: var(--clases-accent2);
+}
+
+#seccionClases .clases-add-row input::placeholder {
+    color: var(--clases-muted);
+}
+
+#seccionClases .clases-add-row button {
+    padding: .4rem .7rem;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    font-size: .7rem;
+    font-weight: 700;
+    transition: all .15s;
+}
+
+/* Sugerencias */
+#seccionClases .clases-sugerencias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: .8rem;
+}
+
+#seccionClases .clases-sug-chip {
+    font-size: .6rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 99px;
+    border: 1px solid var(--clases-border2);
+    color: var(--clases-muted);
+    cursor: pointer;
+    transition: all .15s;
+    background: none;
+}
+
+#seccionClases .clases-sug-chip:hover {
+    border-color: var(--clases-accent2);
+    color: var(--clases-accent2);
+}
+
+/* Cupo */
+#seccionClases .clases-cupo-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .6rem .8rem;
+    background: rgba(255,255,255,.03);
+    border-radius: 8px;
+    border: 1px solid var(--clases-border);
+    margin-bottom: .8rem;
+}
+
+#seccionClases .clases-cupo-row label {
+    font-size: .65rem;
+    font-weight: 700;
+    color: var(--clases-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+#seccionClases .clases-cupo-ctrl {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+#seccionClases .clases-cupo-ctrl button {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid var(--clases-border2);
+    background: rgba(255,255,255,.06);
+    color: var(--clases-txt);
+    cursor: pointer;
+    font-size: .75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+}
+
+#seccionClases .clases-cupo-ctrl button:hover {
+    border-color: var(--clases-accent2);
+    color: var(--clases-accent2);
+}
+
+#seccionClases .clases-cupo-ctrl span {
+    font-family: 'Bebas Neue', 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    min-width: 28px;
+    text-align: center;
+}
+
+/* Botones */
+#seccionClases .clases-btn {
+    padding: .55rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: .7rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    letter-spacing: .04em;
+}
+
+#seccionClases .clases-btn-primary {
+    background: var(--clases-accent2);
+    color: white;
+}
+
+#seccionClases .clases-btn-primary:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+#seccionClases .clases-btn-orange {
+    background: var(--clases-fitness);
+    color: white;
+}
+
+#seccionClases .clases-btn-orange:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+#seccionClases .clases-btn-indigo {
+    background: var(--clases-gimnasia);
+    color: white;
+}
+
+#seccionClases .clases-btn-indigo:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+#seccionClases .clases-btn-ghost {
+    background: transparent;
+    color: var(--clases-muted);
+    border: 1px solid var(--clases-border);
+    padding: .4rem .8rem;
+    border-radius: 6px;
+    font-size: .65rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+#seccionClases .clases-btn-ghost:hover {
+    border-color: var(--clases-accent2);
+    color: var(--clases-accent2);
+}
+
+#seccionClases .clases-pub-celda-btn {
+    width: 100%;
+    padding: .55rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .65rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+}
+
+/* Tabla de costos */
+#seccionClases .clases-costos-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .68rem;
+    margin-bottom: 1rem;
+}
+
+#seccionClases .clases-costos-tabla th {
+    color: var(--clases-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: .56rem;
+    letter-spacing: .08em;
+    padding: .35rem .4rem;
+    text-align: left;
+    border-bottom: 1px solid var(--clases-border);
+}
+
+#seccionClases .clases-costos-tabla td {
+    padding: .4rem .4rem;
+    border-bottom: 1px solid rgba(255,255,255,.03);
+}
+
+#seccionClases .clases-costos-tabla tr:hover td {
+    background: rgba(255,255,255,.02);
+}
+
+#seccionClases .clases-precio-pronto {
+    color: var(--clases-accent2);
+    font-weight: 700;
+}
+
+#seccionClases .clases-precio-normal {
+    color: var(--clases-txt);
+    font-weight: 600;
+}
+
+#seccionClases .clases-costo-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(255,255,255,.2);
+    color: var(--clases-txt);
+    font-size: .68rem;
+    font-weight: 600;
+    width: 76px;
+    text-align: right;
+    padding: 1px 3px;
+    outline: none;
+    font-family: 'Outfit', sans-serif;
+}
+
+#seccionClases .clases-costo-input:focus {
+    border-bottom-color: var(--clases-accent2);
+    color: white;
+}
+
+#seccionClases .clases-btn-save-costos {
+    width: 100%;
+    padding: .45rem;
+    border-radius: 7px;
+    border: 1px solid rgba(200,56,42,.35);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .62rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-top: .5rem;
+    transition: all .2s;
+    background: rgba(200,56,42,.12);
+    color: var(--clases-accent2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+}
+
+#seccionClases .clases-btn-save-costos:hover {
+    background: rgba(200,56,42,.22);
+}
+
+/* Profesor */
+#seccionClases .clases-chip-prof {
+    font-size: .5rem;
+    color: rgba(255,255,255,.55);
+    display: block;
+    font-weight: 600;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+    font-style: italic;
+}
+
+#seccionClases .clases-prof-input {
+    width: 100%;
+    background: rgba(255,255,255,.04);
+    border: none;
+    border-bottom: 1px dashed rgba(255,255,255,.18);
+    color: rgba(255,255,255,.75);
+    font-size: .6rem;
+    padding: 2px 3px;
+    outline: none;
+    font-family: 'Outfit', sans-serif;
+    margin-top: 3px;
+    border-radius: 0;
+}
+
+#seccionClases .clases-prof-input:focus {
+    border-bottom-color: var(--clases-accent2);
+    color: white;
+}
+
+/* Formulario de mover */
+#seccionClases .clases-move-form {
+    background: rgba(0,0,0,.3);
+    border: 1px solid rgba(165,180,252,.25);
+    border-radius: 8px;
+    padding: .6rem;
+    margin-top: .4rem;
+}
+
+#seccionClases .clases-move-form select {
+    background: rgba(0,0,0,.4);
+    border: 1px solid var(--clases-border);
+    color: white;
+    border-radius: 5px;
+    padding: .28rem .4rem;
+    font-size: .62rem;
+    font-family: 'Outfit', sans-serif;
+    width: 100%;
+    margin-bottom: .35rem;
+}
+
+#seccionClases .clases-move-form label {
+    font-size: .56rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--clases-muted);
+    display: block;
+    margin-bottom: .15rem;
+}
+
+#seccionClases .clases-btn-confirmar-mover {
+    width: 100%;
+    padding: .4rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .62rem;
+    background: var(--clases-accent2);
+    color: white;
+    transition: all .2s;
+}
+
+#seccionClases .clases-btn-cancelar-mover {
+    width: 100%;
+    padding: .38rem;
+    border-radius: 6px;
+    border: 1px solid var(--clases-border);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .62rem;
+    background: none;
+    color: var(--clases-muted);
+    transition: all .2s;
+    margin-top: .25rem;
+}
+
+/* Publicar grid */
+#seccionClases .clases-pub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: .9rem;
+    margin-top: 1rem;
+}
+
+#seccionClases .clases-pub-card {
+    background: var(--clases-surface);
+    border: 1.5px solid var(--clases-border);
+    border-radius: 12px;
+    padding: 1.1rem;
+    transition: all .2s;
+}
+
+#seccionClases .clases-pub-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--clases-border2);
+}
+
+#seccionClases .clases-pub-card.en-fb {
+    border-color: rgba(200,56,42,.4);
+    opacity: .65;
+}
+
+/* Toast */
+#seccionClases .clases-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1e293b;
+    color: white;
+    padding: .75rem 1.2rem;
+    border-radius: 10px;
+    font-size: .75rem;
+    font-weight: 700;
+    z-index: 9999;
+    transform: translateY(80px);
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    border-left: 3px solid var(--clases-accent2);
+}
+
+#seccionClases .clases-toast.show {
+    transform: translateY(0);
+}
+
+/* Celda en Firebase */
+#seccionClases .clases-celda-fb {
+    position: relative;
+}
+
+#seccionClases .clases-celda-fb::after {
+    content: '✓';
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    font-size: .5rem;
+    color: var(--clases-accent2);
+    opacity: .7;
+    font-weight: 900;
+}
+
+/* Import area */
+#seccionClases .clases-import-area {
+    background: var(--clases-surface);
+    border: 2px dashed var(--clases-border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all .3s;
+}
+
+#seccionClases .clases-import-area:hover {
+    border-color: var(--clases-accent2);
+    background: rgba(200,56,42,.04);
+}
+
+#seccionClases .clases-import-progress {
+    background: var(--clases-surface);
+    border: 1px solid var(--clases-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    #seccionClases .clases-layout-split {
+        grid-template-columns: 1fr;
+    }
+    
+    #seccionClases .clases-sidebar-panel {
+        position: relative;
+        top: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    #seccionClases .clases-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #seccionClases .clases-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    
+    #seccionClases .clases-grid-horario {
+        font-size: .55rem;
+    }
+    
+    #seccionClases .clases-pub-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
