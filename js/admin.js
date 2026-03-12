@@ -421,7 +421,7 @@ window.cambiarCupoClase = function(hora, dia, delta) {
         clases.forEach(nombre => {
             const k = fbKeyClase(nombre, hora, dia);
             if (fbDocsMapClases.has(k)) {
-                db.collection('catalogo').doc(fbDocsMapClases.get(k).id).update({ cupo: nuevo, cupoDisponible: nuevo }).catch(() => { });
+                db.collection('catalogo').doc(fbDocsMapClases.get(k).id).update({ cupo: nuevo, cupoDisponible: nuevo }).catch((e) => { console.error('Error actualizando cupo:', e); });
             }
         });
     }
@@ -768,14 +768,17 @@ db.collection('catalogo').where('tipo', '==', 'clase').onSnapshot(snap => {
 });
 
 db.collection('alumnos').onSnapshot(s => document.getElementById('hTotalAlumnosClases').innerText = s.size);
+
+// Cargar costos desde Firebase
+cargarCostosClases();
 }
 
 
-// ── INIT CLASES ──
+// ── INIT CLASES ── (solo render inicial, sin Firebase)
 renderGridClases(HORARIO_FITNESS_CLASES, 'gridClasesFitness', 'fitness');
 renderGridClases(HORARIO_GIMNASIA_CLASES, 'gridClasesGimnasia', 'gimnasia');
 recalcPlanasClases();
-cargarCostosClases();
+// cargarCostosClases() se llama desde initClasesListeners() una vez que Firebase está listo
 
 // ══════════════════════════════════════════════════════════════════
 // FIN MÓDULO: ADMIN DE CLASES

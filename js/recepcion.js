@@ -37,7 +37,7 @@ function showView(id,btn){
 }
 
 // ── RELOJ ────────────────────────────────────────────────────────
-setInterval(()=>$r('reloj').textContent=new Date().toLocaleTimeString('es-MX'),1000);
+setInterval(()=>{const _r=$r('reloj');if(_r)_r.textContent=new Date().toLocaleTimeString('es-MX');},1000);
 
 // ── DASHBOARD ────────────────────────────────────────────────────
 function initRecepcion() {
@@ -742,7 +742,7 @@ window.addEventListener('DOMContentLoaded',()=>{ // REC_INIT
     const hoy=new Date();
     const mesActual=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0');
     const fi=$r('filtroMesIngr');if(fi)fi.value=mesActual;
-    setInterval(()=>$r('reloj').textContent=new Date().toLocaleTimeString('es-MX'),1000);
+    setInterval(()=>{const _r=$r('reloj');if(_r)_r.textContent=new Date().toLocaleTimeString('es-MX');},1000);
 });
 
 

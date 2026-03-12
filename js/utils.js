@@ -30,7 +30,7 @@ window.togglePassword = function() {
 };
 
 // ══════════ TAB SWITCHING ══════════
-window.showLoginTab = function() {
+window.showLoginTab = function(event) {
     document.querySelectorAll('.login-tab').forEach(tab => tab.classList.remove('active'));
     if (event && event.target) event.target.classList.add('active');
 };

@@ -14,7 +14,7 @@ function getRtdb() {
 }
 
 
-const URL_GAS="https://script.google.com/macros/s/AKfycbwZg7nmuTA27A3rT6Pn6uDyfB4eyzbrFP5js09VNC1L-iMqG__DIvlFS59oH90HHu1Q/exec";
+var URL_GAS_ALUMNO="https://script.google.com/macros/s/AKfycbwZg7nmuTA27A3rT6Pn6uDyfB4eyzbrFP5js09VNC1L-iMqG__DIvlFS59oH90HHu1Q/exec";
 const INSCRIPCION_MONTO=800;
 // Paquetes: clases → {n: precio normal, p: precio pronto pago}
 const PAQUETES_FITNESS  ={1:{n:700,p:630},2:{n:1300,p:1170},3:{n:1800,p:1620},4:{n:2200,p:1980},5:{n:2600,p:2340}};
@@ -555,7 +555,7 @@ async function confirmarOrden(){
         const tieneInsc=CART.some(i=>i.tipo==='inscripcion');
         const orden={id:USER.id,nombre:USER.nombre,monto:total,detalle,folio,tieneInscripcion:tieneInsc,fecha:new Date().toLocaleDateString('es-MX'),timestamp:Date.now()};
         await getRtdb().ref('estatus_acceso/'+USER.id).set(orden);
-        fetch(URL_GAS,{method:'POST',mode:'no-cors',body:JSON.stringify({accion:'REGISTRAR_PAGO',id:USER.id,nombre:USER.nombre,adicionales:detalle,idCarrito:folio,monto:total,metodo:'APP_PENDIENTE'})}).catch(()=>{});
+        fetch(URL_GAS_ALUMNO,{method:'POST',mode:'no-cors',body:JSON.stringify({accion:'REGISTRAR_PAGO',id:USER.id,nombre:USER.nombre,adicionales:detalle,idCarrito:folio,monto:total,metodo:'APP_PENDIENTE'})}).catch(()=>{});
         CART=[];actualizarBadge();
         $al( 'modalCart').classList.remove('on');
         mostrarQR(orden);
@@ -732,6 +732,7 @@ async function guardarPrimerPass(){
     if (typeof guardarNuevaPass === 'function') window.guardarNuevaPass = guardarNuevaPass;
     if (typeof guardarPrimerPass === 'function') window.guardarPrimerPass = guardarPrimerPass;
     if (typeof irPaso3 === 'function') window.irPaso3 = irPaso3;
+    if (typeof logoutAl === 'function') window.logoutAl = logoutAl;
     if (typeof navTo === 'function') window.navTo = navTo;
     if (typeof selArea === 'function') window.selArea = selArea;
     if (typeof switchLTab === 'function') window.switchLTab = switchLTab;
@@ -741,26 +742,3 @@ async function guardarPrimerPass(){
     if (typeof volverPaso === 'function') window.volverPaso = volverPaso;
 
 // ─── FIN MÓDULO ALUMNO ─────────────────────────────────────────
-
-
-// ── EXPONER FUNCIONES GLOBALES (onclick en HTML) ──
-if (typeof abrirCarrito === 'function') window.abrirCarrito = abrirCarrito;
-if (typeof agregarAlCarrito === 'function') window.agregarAlCarrito = agregarAlCarrito;
-if (typeof cancelarOrden === 'function') window.cancelarOrden = cancelarOrden;
-if (typeof cerrarQR === 'function') window.cerrarQR = cerrarQR;
-if (typeof compartirWA === 'function') window.compartirWA = compartirWA;
-if (typeof confirmarOrden === 'function') window.confirmarOrden = confirmarOrden;
-if (typeof descargarCredencialAl === 'function') window.descargarCredencialAl = descargarCredencialAl;
-if (typeof doLogin === 'function') window.doLogin = doLogin;
-if (typeof guardarFicha === 'function') window.guardarFicha = guardarFicha;
-if (typeof guardarNuevaPass === 'function') window.guardarNuevaPass = guardarNuevaPass;
-if (typeof guardarPrimerPass === 'function') window.guardarPrimerPass = guardarPrimerPass;
-if (typeof irPaso3 === 'function') window.irPaso3 = irPaso3;
-if (typeof logoutAl === 'function') window.logoutAl = logoutAl;
-if (typeof navTo === 'function') window.navTo = navTo;
-if (typeof selArea === 'function') window.selArea = selArea;
-if (typeof switchLTab === 'function') window.switchLTab = switchLTab;
-if (typeof toggleEye === 'function') window.toggleEye = toggleEye;
-if (typeof verQROrden === 'function') window.verQROrden = verQROrden;
-if (typeof verificarCURP === 'function') window.verificarCURP = verificarCURP;
-if (typeof volverPaso === 'function') window.volverPaso = volverPaso;
