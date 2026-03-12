@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IBIME - Registro Maestro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; touch-action: manipulation; }
+        .card-ibime { background: white; border-radius: 3rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .accordion-content { max-height: 0; overflow: hidden; transition: all 0.3s ease-out; opacity: 0; }
+        .accordion-open { max-height: 500px; opacity: 1; margin-top: 1rem; }
+        #qrcode img { margin: 0 auto; border-radius: 1rem; border: 4px solid white; }
+        .input-error { border-color: #ef4444 !important; background: #fff5f5 !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4">
+
+<div class="card-ibime w-full max-w-md p-6 sm:p-10 border border-slate-200/60 mt-4 mb-10">
+    <div id="header" class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
+            <span class="text-white text-xl font-bold italic">IB</span>
+        </div>
+        <h1 class="text-2xl font-[800] text-slate-800 tracking-tight leading-tight uppercase italic">Gimnasio IBIME</h1>
+        <p class="text-slate-400 text-[10px] mt-1 font-bold uppercase tracking-[0.2em]">Registro Maestro</p>
+    </div>
+
+    <div id="formContainer">
+        <form id="registroForm" class="space-y-4">
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Nombre Completo</label>
+                <input type="text" id="nombre" required
+                    class="w-full px-5 py-3 rounded-[1.2rem] bg-slate-50 border-2 border-transparent focus:border-indigo-500/40 focus:bg-white outline-none transition-all text-slate-700 font-bold uppercase text-sm">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">CURP (18 caracteres)</label>
+                <input type="text" id="curp" required maxlength="18" oninput="validarCURP(this)"
+                    class="w-full px-5 py-3 rounded-[1.2rem] bg-slate-50 border-2 border-transparent focus:border-indigo-500/40 focus:bg-white outline-none transition-all text-slate-700 font-bold uppercase text-sm tracking-widest">
+                <!-- FIX: Feedback visual de validación de CURP -->
+                <p id="curpError" class="hidden text-rose-500 text-[9px] font-black ml-2 mt-1 uppercase">
+                    CURP inválida — requiere exactamente 18 caracteres alfanuméricos
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Comunidad IBIME</label>
+                <select id="condicion" onchange="toggleMatricula()"
+                    class="w-full px-5 py-3 rounded-[1.2rem] bg-slate-50 border-none text-slate-700 font-bold text-sm appearance-none outline-none">
+                    <option value="EXTERNO">SOY EXTERNO</option>
+                    <option value="ALUMNO IBIME">ALUMNO IBIME</option>
+                    <option value="FAMILIA IBIME">FAMILIA IBIME</option>
+                </select>
+            </div>
+
+            <div id="campoMatricula" class="hidden animate-pop">
+                <label class="block text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1 ml-1">Matrícula IBIME</label>
+                <input type="text" id="matricula" placeholder="INGRESA TU MATRÍCULA"
+                    class="w-full px-5 py-3 rounded-[1.2rem] bg-indigo-50 border-none text-indigo-700 font-bold uppercase text-sm outline-none">
+            </div>
+
+            <!-- FIX: Niveles generados dinámicamente desde la config -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Nivel</label>
+                    <select id="nivel" onchange="actualizarCosto()"
+                        class="w-full px-4 py-3 rounded-[1.2rem] bg-slate-50 border-none text-slate-700 font-bold text-sm appearance-none outline-none">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Inscripción</label>
+                    <input type="text" id="pago" readonly
+                        class="w-full px-4 py-3 rounded-[1.2rem] bg-indigo-50 border-none text-indigo-700 font-black text-center outline-none">
+                </div>
+            </div>
+
+            <button type="submit" id="btnGuardar"
+                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-[1.5rem] shadow-xl shadow-indigo-100 mt-4 transition-all">
+                INSCRIBIR ALUMNO
+            </button>
+        </form>
+
+        <div id="consultaApartado" class="mt-6 bg-slate-50 rounded-[2rem] p-4 border border-slate-100">
+            <button onclick="toggleConsulta()"
+                class="w-full flex items-center justify-between px-2 text-slate-500 font-bold text-[10px] uppercase tracking-widest outline-none">
+                <span>🔍 Ya estoy registrado (Buscar)</span>
+                <span id="flecha">↓</span>
+            </button>
+            <div id="consultaContent" class="accordion-content">
+                <div class="pt-4 space-y-3">
+                    <input type="text" id="curpConsulta" maxlength="18" placeholder="CURP A BUSCAR"
+                        class="w-full px-5 py-3 rounded-[1rem] bg-white border-none text-sm font-bold text-slate-700 shadow-sm outline-none uppercase">
+                    <!-- FIX: id para deshabilitar durante búsqueda -->
+                    <button id="btnBuscar" onclick="buscarPorCurp()"
+                        class="w-full bg-indigo-100 text-indigo-600 font-black py-3 rounded-[1rem] text-xs uppercase">
+                        Recuperar Acceso
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mensajeExistente" class="hidden animate-pop text-center p-6 bg-amber-50 rounded-[2.5rem] border border-amber-100 mt-4">
+        <p class="text-amber-800 font-black text-sm uppercase">¡Ya estás registrado!</p>
+        <p class="text-amber-600 text-[10px] mt-1 font-bold">Tu credencial ya existe en el sistema</p>
+        <button id="btnRecuperar" class="w-full bg-amber-500 text-white font-black py-4 rounded-[1.5rem] shadow-lg mt-4 text-xs">VER CREDENCIAL</button>
+    </div>
+
+    <div id="resultadoContainer" class="hidden animate-pop">
+        <div id="credencialVisual" class="bg-white p-6 rounded-[3rem] border border-slate-200 text-center mb-6 shadow-sm w-full relative overflow-hidden">
+            <div class="bg-indigo-600 h-2 w-full absolute top-0 left-0"></div>
+            <span class="bg-indigo-50 text-indigo-600 text-[8px] font-black px-4 py-1 rounded-full uppercase tracking-widest inline-block mt-4 mb-4">Membresía Digital</span>
+            <div id="qrcode" class="mb-4"></div>
+            <h2 id="qrNombre" class="text-xl font-black text-slate-800 uppercase mb-1"></h2>
+            <p id="qrID" class="text-slate-400 font-bold text-[10px] tracking-widest mb-1"></p>
+            <!-- FIX: Mostrar fecha de vencimiento en la credencial -->
+            <p id="qrVence" class="text-emerald-600 font-bold text-[10px] tracking-widest mb-4"></p>
+            <div class="flex justify-center gap-2 mb-4">
+                <span id="qrNivel" class="text-indigo-600 font-black text-[9px] uppercase bg-indigo-50 px-3 py-1 rounded-lg"></span>
+                <span id="qrPIN"   class="text-amber-600 font-black text-[9px] uppercase bg-amber-50 px-3 py-1 rounded-lg"></span>
+            </div>
+            <p class="text-[7px] text-slate-300 font-black uppercase tracking-[0.3em]">IBIME Gymnastics Club</p>
+        </div>
+
+        <button onclick="descargarCredencial()" class="w-full bg-slate-900 text-white py-4 rounded-[1.5rem] font-black text-sm mb-3">💾 GUARDAR EN DISPOSITIVO</button>
+        <button onclick="enviarWhatsApp()"       class="w-full bg-green-500 text-white py-4 rounded-[1.5rem] font-black text-sm mb-3">📱 ENVIAR POR WHATSAPP</button>
+        <button onclick="location.reload()"      class="w-full text-slate-400 font-black text-[10px] uppercase py-2">← NUEVO REGISTRO</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc, getDocs, query, where, runTransaction, setDoc }
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // ── CONFIG CENTRAL ── (idéntica en los 4 archivos)
+    const FIREBASE_CONFIG = {
+        apiKey:      "AIzaSyBxBmuQY5n5ecf5Vy6vLPu_qKP726IaLzs",
+        authDomain:  "gymnastics-club-by-ibime.firebaseapp.com",
+        databaseURL: "https://gymnastics-club-by-ibime-default-rtdb.firebaseio.com/",
+        projectId:   "gymnastics-club-by-ibime",
+        appId:       "1:849277925066:web:6ef91b240277fe24846633"
+    };
+    const URL_GAS        = "https://script.google.com/macros/s/AKfycbwZg7nmuTA27A3rT6Pn6uDyfB4eyzbrFP5js09VNC1L-iMqG__DIvlFS59oH90HHu1Q/exec";
+    const MEMBRESIA_DIAS = 30;
+    // FIX: Niveles centralizados — mismos en recepcion.html
+    const NIVELES = [
+        { value: "Baby Gym",     costo: 100 },
+        { value: "Principiante", costo: 200 },
+        { value: "Intermedio",   costo: 300 },
+        { value: "Avanzado",     costo: 400 },
+        { value: "Elite",        costo: 500 },
+    ];
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db  = getFirestore(app);
+    let alumnoEncontrado = null;
+
+    // Poblar select de niveles dinámicamente
+    const selNivel = document.getElementById('nivel');
+    NIVELES.forEach((n, i) => {
+        const opt = document.createElement('option');
+        opt.value = n.value;
+        opt.dataset.costo = n.costo;
+        opt.textContent = n.value;
+        if (i === 1) opt.selected = true;
+        selNivel.appendChild(opt);
+    });
+    actualizarCosto();
+
+    // ── UI ────────────────────────────────────────────────────────────────────
+    window.toggleMatricula = () => {
+        const cond = document.getElementById('condicion').value;
+        document.getElementById('campoMatricula').classList.toggle('hidden', cond === 'EXTERNO');
+    };
+
+    window.actualizarCosto = () => {
+        const sel = document.getElementById('nivel');
+        const costo = sel.options[sel.selectedIndex]?.dataset.costo || 0;
+        document.getElementById('pago').value = `$${costo}`;
+    };
+
+    window.toggleConsulta = () => {
+        document.getElementById('consultaContent').classList.toggle('accordion-open');
+    };
+
+    // FIX: Validación de CURP con feedback visual en tiempo real
+    window.validarCURP = (input) => {
+        input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const errEl  = document.getElementById('curpError');
+        const valido = input.value.length === 18;
+        errEl.classList.toggle('hidden', valido || input.value.length === 0);
+        input.classList.toggle('input-error', !valido && input.value.length > 0);
+    };
+
+    // ── REGISTRO ──────────────────────────────────────────────────────────────
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn       = document.getElementById('btnGuardar');
+        const curp      = document.getElementById('curp').value.trim().toUpperCase();
+        const nombre    = document.getElementById('nombre').value.trim().toUpperCase();
+        const condicion = document.getElementById('condicion').value;
+        const matricula = document.getElementById('matricula').value.trim() || "N/A";
+        const nivel     = document.getElementById('nivel').value;
+        const pago      = document.getElementById('pago').value.replace('$', '');
+
+        if (curp.length !== 18) { alert("La CURP debe tener 18 caracteres."); return; }
+
+        btn.disabled  = true;
+        btn.innerHTML = "PROCESANDO...";
+
+        try {
+            // 1. Verificar duplicado por CURP
+            const snap = await getDocs(query(collection(db, "alumnos"), where("curp", "==", curp)));
+            if (!snap.empty) {
+                alumnoEncontrado = { id: snap.docs[0].id, ...snap.docs[0].data() };
+                document.getElementById('formContainer').classList.add('hidden');
+                document.getElementById('mensajeExistente').classList.remove('hidden');
+                return;
+            }
+
+            // 2. FIX: Contador en config/contador_alumnos (sincronizado con el resto del sistema)
+            const counterRef = doc(db, "config", "contador_alumnos");
+            const nuevoID    = await runTransaction(db, async (tx) => {
+                const cSnap = await tx.get(counterRef);
+                const num   = cSnap.exists() ? (cSnap.data().ultimo_numero || 0) + 1 : 1;
+                tx.set(counterRef, { ultimo_numero: num }, { merge: true });
+                return `IBI-GYM${String(num).padStart(6, '0')}`;
+            });
+
+            // FIX: PIN aleatorio de 4 dígitos numéricos (más seguro que CURP)
+            const pinAcceso = String(Math.floor(1000 + Math.random() * 9000));
+
+            // FIX CRÍTICO: Calcular y guardar vencimiento desde el registro
+            const hoy         = new Date();
+            const vencimiento = new Date(hoy);
+            vencimiento.setDate(vencimiento.getDate() + MEMBRESIA_DIAS);
+            const vencimientoStr = vencimiento.toISOString().split('T')[0]; // YYYY-MM-DD
+            const fechaHoy       = hoy.toLocaleDateString('es-MX');
+
+            // 3. Guardar en Firestore incluyendo vencimiento y estatus
+            await setDoc(doc(db, "alumnos", nuevoID), {
+                nombre, curp, nivel, pago, pin: pinAcceso,
+                condicion, matricula, fechaRegistro: fechaHoy,
+                vencimiento: vencimientoStr,  // ← ahora alumno.html y scanner.html lo leen
+                estatus: "ACTIVO"
+            });
+
+            // 4. Espejo en Google Sheets
+            fetch(URL_GAS, {
+                method: 'POST', mode: 'no-cors',
+                body: JSON.stringify({
+                    accion: "NUEVO_USUARIO",
+                    id: nuevoID, nombre, curp, pin: pinAcceso,
+                    nivel, monto: pago, fecha: fechaHoy,
+                    condicion, matricula, vencimiento: vencimientoStr
+                })
+            }).catch(err => console.warn("Error Sheets:", err));
+
+            mostrarCredencial(nuevoID, nombre, nivel, pinAcceso, vencimientoStr);
+
+        } catch (error) {
+            console.error(error);
+            alert("Error en el registro: " + error.message);
+        } finally {
+            btn.disabled  = false;
+            btn.innerHTML = "INSCRIBIR ALUMNO";
+        }
+    });
+
+    // ── BÚSQUEDA ──────────────────────────────────────────────────────────────
+    // FIX: Botón deshabilitado durante la búsqueda (evita peticiones duplicadas)
+    window.buscarPorCurp = async () => {
+        const btn   = document.getElementById('btnBuscar');
+        const curpB = document.getElementById('curpConsulta').value.trim().toUpperCase();
+        if (curpB.length < 10) { alert("CURP inválida"); return; }
+
+        btn.disabled  = true;
+        btn.innerText = "BUSCANDO...";
+        try {
+            const snap = await getDocs(query(collection(db, "alumnos"), where("curp", "==", curpB)));
+            if (snap.empty) { alert("No se encontró ningún registro."); return; }
+            const d = snap.docs[0];
+            mostrarCredencial(d.id, d.data().nombre, d.data().nivel, d.data().pin, d.data().vencimiento);
+        } catch (e) {
+            alert("Error de conexión.");
+        } finally {
+            btn.disabled  = false;
+            btn.innerText = "Recuperar Acceso";
+        }
+    };
+
+    // ── CREDENCIAL ────────────────────────────────────────────────────────────
+    function mostrarCredencial(id, nombre, nivel, pin, vencimiento) {
+        document.getElementById('formContainer').classList.add('hidden');
+        document.getElementById('header').classList.add('hidden');
+        document.getElementById('mensajeExistente').classList.add('hidden');
+        document.getElementById('resultadoContainer').classList.remove('hidden');
+
+        document.getElementById('qrNombre').innerText = nombre;
+        document.getElementById('qrID').innerText     = id;
+        document.getElementById('qrNivel').innerText  = nivel;
+        document.getElementById('qrPIN').innerText    = `PIN: ${pin}`;
+        document.getElementById('qrVence').innerText  = vencimiento ? `Vence: ${vencimiento}` : '';
+
+        const qrC = document.getElementById("qrcode");
+        qrC.innerHTML = "";
+        new QRCode(qrC, { text: id, width: 180, height: 180, colorDark: "#4f46e5" });
+    }
+
+    window.descargarCredencial = () => {
+        html2canvas(document.getElementById('credencialVisual'), { scale: 3, useCORS: true })
+            .then(canvas => {
+                const link    = document.createElement('a');
+                link.download = `IBIME_${document.getElementById('qrNombre').innerText}.png`;
+                link.href     = canvas.toDataURL();
+                link.click();
+            });
+    };
+
+    window.enviarWhatsApp = () => {
+        const nombre = document.getElementById('qrNombre').innerText;
+        const id     = document.getElementById('qrID').innerText;
+        const pin    = document.getElementById('qrPIN').innerText;
+        const vence  = document.getElementById('qrVence').innerText;
+        const msj    = `*IBIME GYMNASTICS CLUB*\n¡Bienvenido ${nombre}!\nTu ID: *${id}*\nTu ${pin}\n${vence}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msj)}`, '_blank');
+    };
+
+    document.getElementById('btnRecuperar').onclick = () => {
+        if (alumnoEncontrado) {
+            mostrarCredencial(
+                alumnoEncontrado.id, alumnoEncontrado.nombre,
+                alumnoEncontrado.nivel, alumnoEncontrado.pin, alumnoEncontrado.vencimiento
+            );
+        }
+    };
+</script>
+</body>
+</html>
