@@ -1,0 +1,181 @@
+/* =================================================================
+   IBIME GYMNASTICS CLUB — Estilos del Módulo de Recepción
+   recepcion.css: navbar, vistas, cards, grids del módulo de recepción
+   ================================================================= */
+
+    /* VARIABLES CSS — MODULO RECEPCION */
+    #seccionRecepcion {
+        --azul: #1e3a6e; --azul2: #264971; --rojo: #c8382a;
+        --bg: #f0f4fa; --border: #e2e8f0; --txt: #1a2540; --txt2: #64748b;
+        display: none;
+        background: var(--bg);
+        min-height: calc(100vh - 80px);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    #seccionRecepcion.active { display: block; animation: fadeIn .25s ease; }
+    #recNavBar {
+        display: flex; background: #0c1828; padding: .5rem .75rem;
+        gap: .25rem; flex-wrap: wrap; border-radius: 12px 12px 0 0; align-items: center;
+    }
+    #recNavBar .rec-nav-logo {
+        font-size: .72rem; font-weight: 900; color: white; letter-spacing: 1px;
+        text-transform: uppercase; padding: .4rem .7rem; margin-right: .5rem;
+        border-right: 1px solid rgba(255,255,255,.1);
+    }
+    #recNavBar .rec-nav-logo span { color: #c8382a; }
+    .rec-nav-btn {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .4rem .75rem; border-radius: 8px; border: none; background: none;
+        font-family: 'Outfit', sans-serif; font-size: .62rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .06em;
+        color: rgba(255,255,255,.5); cursor: pointer; transition: all .2s;
+    }
+    .rec-nav-btn:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+    .rec-nav-btn.on { background: rgba(255,255,255,.12); color: white; }
+    .rec-nav-btn.on.rojo { background: #c8382a; color: white; }
+    .rec-nav-btn i { font-size: .75rem; width: 14px; text-align: center; }
+    #recContent { padding: 1.5rem; background: #f0f4fa; border-radius: 0 0 12px 12px; }
+    /* Vistas internas del módulo Recepción */
+    #seccionRecepcion .view { display: none; }
+    #seccionRecepcion .view.on { display: block; animation: fadeIn .25s ease; }
+
+    #seccionRecepcion .grid-5-col { display: grid; grid-template-columns: repeat(5,1fr); gap: .75rem; margin-bottom: 1rem; }
+    #seccionRecepcion .grid-4-pre { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1rem; }
+    #seccionRecepcion .grid-3-col { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; }
+    #seccionRecepcion .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    #seccionRecepcion .grid-clases-main { display: grid; grid-template-columns: 1fr 420px; gap: 1.2rem; align-items: start; }
+    #seccionRecepcion .grid-clase-form  { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+    #seccionRecepcion #credPreview { background: linear-gradient(135deg,#0c1828,#1e3a6e 60%,#264971); color: white; border-radius: 14px; padding: 1.1rem; width: 100%; }
+    @keyframes recPulse { 0%,100%{opacity:1}50%{opacity:.4} }
+    @media(max-width:1024px){
+        #seccionRecepcion .grid-5-col { grid-template-columns: repeat(3,1fr); }
+        #seccionRecepcion .grid-clases-main { grid-template-columns: 1fr; }
+    }
+    @media(max-width:640px){
+        #seccionRecepcion .grid-5-col { grid-template-columns: 1fr 1fr; }
+        #seccionRecepcion .grid-4-pre { grid-template-columns: 1fr 1fr; }
+        #seccionRecepcion .grid-3-col { grid-template-columns: 1fr; }
+        #seccionRecepcion .grid-2-col { grid-template-columns: 1fr; }
+        #seccionRecepcion .grid-clase-form { grid-template-columns: 1fr; }
+    }
+
+
+/* ── SIDEBAR ── */
+
+/* ── MAIN ── */
+
+/* ── TOAST ── */
+
+/* ── CARDS ── */
+#seccionRecepcion .card{background:white;border-radius:14px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+#seccionRecepcion .stat-card{background:white;border-radius:14px;border:1px solid var(--border);padding:1.1rem 1.2rem;position:relative;overflow:hidden}
+#seccionRecepcion .stat-card .accent{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:14px 0 0 14px}
+#seccionRecepcion .stat-val{font-size:1.8rem;font-weight:900;line-height:1;margin-top:.2rem}
+#seccionRecepcion .stat-lbl{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--txt2)}
+#seccionRecepcion .page-title{font-size:1.5rem;font-weight:900;letter-spacing:.02em;margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
+#seccionRecepcion .page-title span{color:var(--rojo)}
+#seccionRecepcion .section-lbl{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--txt2);margin-bottom:.7rem}
+#seccionRecepcion .inp{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'Outfit';font-size:.83rem;font-weight:600;outline:none;transition:all .2s;background:white}
+#seccionRecepcion .inp:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(30,58,110,.08)}
+#seccionRecepcion .lbl{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--txt2);display:block;margin-bottom:.3rem}
+#seccionRecepcion .btn{padding:.65rem 1.1rem;border:none;border-radius:10px;font-family:'Outfit';font-weight:800;font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+#seccionRecepcion .btn-azul{background:var(--azul);color:white}#seccionRecepcion .btn-azul:hover{background:var(--azul2);transform:translateY(-1px)}
+#seccionRecepcion .btn-rojo{background:var(--rojo);color:white}#seccionRecepcion .btn-rojo:hover{filter:brightness(1.1)}
+#seccionRecepcion .btn-ghost{background:#f1f5f9;color:var(--txt2)}#seccionRecepcion .btn-ghost:hover{background:#e2e8f0}
+#seccionRecepcion .badge{font-size:.58rem;font-weight:800;padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.06em}
+#seccionRecepcion .badge-green{background:#dcfce7;color:#166534}#seccionRecepcion .badge-amber{background:#fef9c3;color:#92400e}#seccionRecepcion .badge-red{background:#fee2e2;color:#991b1b}#seccionRecepcion .badge-blue{background:#dbeafe;color:#1e40af}
+#seccionRecepcion .tab-bar{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;gap:3px}
+#seccionRecepcion .tab-btn{flex:1;padding:.45rem;border-radius:8px;border:none;font-family:'Outfit';font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;color:var(--txt2);background:none;transition:all .2s}
+#seccionRecepcion .tab-btn.on{background:var(--azul);color:white}
+
+/* ── CLASES ADMIN — DISCIPLINA CARDS ── */
+#seccionRecepcion .discip-card{background:white;border-radius:16px;border:2px solid var(--border);padding:1.1rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+#seccionRecepcion .discip-card:hover{border-color:#94a3b8;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+#seccionRecepcion .discip-card.sel{border-color:var(--azul);box-shadow:0 4px 16px rgba(30,58,110,.15)}
+#seccionRecepcion .discip-card.fitness.sel{border-color:var(--rojo);box-shadow:0 4px 16px rgba(200,56,42,.15)}
+#seccionRecepcion .discip-card .dc-icon{font-size:2rem;margin-bottom:.5rem;display:block}
+#seccionRecepcion .discip-card .dc-name{font-weight:900;font-size:.88rem;text-transform:uppercase;letter-spacing:.03em;margin-bottom:.2rem}
+#seccionRecepcion .discip-card .dc-sub{font-size:.62rem;font-weight:600;color:var(--txt2)}
+#seccionRecepcion .discip-card .dc-badge{position:absolute;top:.6rem;right:.6rem}
+#seccionRecepcion .dc-ocupacion{margin-top:.7rem;height:4px;background:#e2e8f0;border-radius:99px;overflow:hidden}
+#seccionRecepcion .dc-ocupacion-fill{height:100%;border-radius:99px;transition:width .4s ease}
+
+/* ── PANEL BOTONES ── */
+#seccionRecepcion .pbtn{flex:1;padding:.45rem .3rem;border-radius:8px;border:1.5px solid var(--border);background:white;font-family:'Outfit';font-size:.65rem;font-weight:800;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.3rem;transition:all .2s;color:var(--txt2)}
+#seccionRecepcion .pbtn:hover{border-color:#94a3b8;background:#f8fafc}
+#seccionRecepcion .pbtn.on{background:var(--azul);color:white;border-color:var(--azul)}
+
+/* ── ALUMNO CARD EN CLASE ── */
+#seccionRecepcion .alumno-en-clase{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-radius:12px;border:1px solid var(--border);background:white;transition:all .2s}
+#seccionRecepcion .alumno-en-clase:hover{border-color:#94a3b8;background:#fafbff}
+#seccionRecepcion .ac-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--azul2));color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;flex-shrink:0}
+#seccionRecepcion .ac-info p{font-weight:800;font-size:.78rem;text-transform:uppercase}
+#seccionRecepcion .ac-info span{font-size:.6rem;font-weight:600;color:var(--txt2);font-family:monospace}
+
+/* ── ALUMNO VIEW POR ALUMNO ── */
+#seccionRecepcion .alumno-clases-card{background:white;border-radius:14px;border:1px solid var(--border);padding:1rem;margin-bottom:.5rem}
+#seccionRecepcion .ac-clase-pill{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .7rem;border-radius:8px;font-size:.65rem;font-weight:800;margin:.15rem;text-transform:uppercase}
+
+/* ── CREDENCIAL ── */
+#seccionRecepcion #credPreview{background:linear-gradient(135deg,#0c1828,var(--azul) 60%,var(--azul2));color:white;border-radius:14px;padding:1.1rem;width:100%}
+
+/* ── HAMBURGER BUTTON ── */
+
+/* ── RESPONSIVE GRID CLASSES ── */
+#seccionRecepcion .grid-5-col{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.2rem}
+#seccionRecepcion .grid-4-col{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem}
+#seccionRecepcion .grid-3-col{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:.7rem}
+#seccionRecepcion .grid-3-col-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.2rem}
+#seccionRecepcion .grid-2-col{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+#seccionRecepcion .grid-2-col-sm{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+#seccionRecepcion .grid-4-pre{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem}
+#seccionRecepcion .grid-registro{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+#seccionRecepcion .grid-form-2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:.8rem}
+#seccionRecepcion .grid-caja{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+#seccionRecepcion .grid-catalogo{display:grid;grid-template-columns:1fr 2fr;gap:1.2rem}
+#seccionRecepcion .grid-alumnos{display:grid;grid-template-columns:300px 1fr;gap:1.2rem}
+#seccionRecepcion .grid-clases-main{display:grid;grid-template-columns:1fr 420px;gap:1.2rem;align-items:start}
+#seccionRecepcion .grid-ingresos-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.2rem}
+#seccionRecepcion .grid-2-btn{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem}
+#seccionRecepcion .grid-clase-form{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+#seccionRecepcion .grid-caja-sub{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+#seccionRecepcion .grid-ingreso-sub{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem}
+
+/* ── TABLET MEDIA QUERY (769px - 1024px) ── */
+@media (min-width:769px) and (max-width:1024px){
+#seccionRecepcion #sidebar.open{transform:translateX(0)}
+#seccionRecepcion .grid-5-col{grid-template-columns:repeat(3,1fr)}
+#seccionRecepcion .grid-4-col{grid-template-columns:repeat(2,1fr)}
+#seccionRecepcion .grid-3-col{grid-template-columns:repeat(2,1fr)}
+#seccionRecepcion .grid-4-pre{grid-template-columns:repeat(3,1fr)}
+#seccionRecepcion .grid-alumnos{grid-template-columns:1fr}
+#seccionRecepcion .grid-clases-main{grid-template-columns:1fr}
+#seccionRecepcion .grid-catalogo{grid-template-columns:1fr}
+}
+
+/* ── MOBILE MEDIA QUERY (≤768px) ── */
+@media (max-width:768px){
+#seccionRecepcion #sidebar.open{transform:translateX(0)}
+#seccionRecepcion .grid-5-col{grid-template-columns:repeat(2,1fr)}
+#seccionRecepcion .grid-4-col{grid-template-columns:repeat(2,1fr)}
+#seccionRecepcion .grid-3-col{grid-template-columns:1fr}
+#seccionRecepcion .grid-3-col-stats{grid-template-columns:1fr}
+#seccionRecepcion .grid-2-col{grid-template-columns:1fr}
+#seccionRecepcion .grid-2-col-sm{grid-template-columns:1fr}
+#seccionRecepcion .grid-4-pre{grid-template-columns:repeat(2,1fr)}
+#seccionRecepcion .grid-registro{grid-template-columns:1fr}
+#seccionRecepcion .grid-form-2{grid-template-columns:1fr}
+#seccionRecepcion .grid-caja{grid-template-columns:1fr}
+#seccionRecepcion .grid-catalogo{grid-template-columns:1fr}
+#seccionRecepcion .grid-alumnos{grid-template-columns:1fr}
+#seccionRecepcion .grid-clases-main{grid-template-columns:1fr}
+#seccionRecepcion .grid-ingresos-stats{grid-template-columns:1fr}
+#seccionRecepcion .grid-2-btn{grid-template-columns:1fr}
+#seccionRecepcion .grid-clase-form{grid-template-columns:1fr}
+#seccionRecepcion .grid-caja-sub{grid-template-columns:1fr}
+#seccionRecepcion .grid-ingreso-sub{grid-template-columns:1fr}
+#seccionRecepcion .stat-val{font-size:1.4rem}
+#seccionRecepcion .page-title{font-size:1.2rem}
+}
+

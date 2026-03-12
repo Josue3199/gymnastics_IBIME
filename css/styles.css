@@ -1,0 +1,35 @@
+/* =================================================================
+   IBIME GYMNASTICS CLUB — Estilos Globales
+   styles.css: reset, variables, tipografía base
+   ================================================================= */
+
+:root {
+    --azul: #1e3a6e;
+    --azul2: #264971;
+    --rojo: #c8382a;
+    --rojo2: #a32d22;
+    --bg: #f0f4fa;
+    --bg2: #e8eef7;
+    --border: #e2e8f0;
+    --txt: #1a2540;
+    --txt2: #64748b;
+    --sidebar: #0c1828;
+}
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: linear-gradient(135deg, #0f1c2e 0%, #1a2332 100%);
+            color: #e2e8f0; 
+            min-height: 100vh;
+        }
+
+        /* Wrapper para centrar el login */
+        #loginWrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
